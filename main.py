@@ -192,21 +192,79 @@ class ChatState(TypedDict):
     steps: int
 
 def reasoning_node(state: ChatState):
-    if state["steps"] > 8:
-        return {"messages": [AIMessage(content="Max steps reached.")]}
-    response = llm_with_tools.invoke(state["messages"])
-    
-    return {"messages": [response]}
+    steps = state.get("steps", 0)
 
+    if steps > 8:
+        from langchain_core.messages import AIMessage
+        return {
+            "messages": [AIMessage(content="Max reasoning steps reached.")],
+            "steps": steps
+        }
+
+    response = llm_with_tools.invoke(state["messages"])
+
+    return {
+        "messages": [response],
+        "steps": steps + 1
+    }
 def router(state: ChatState):
     last_message = state["messages"][-1]
     if last_message.tool_calls:
         return "tool_node"
     return "final"
 
+def generate_chat_title(user_message: str) -> str:
+    prompt = [
+        SystemMessage(content="Generate a short 3-5 word title for this conversation."),
+        HumanMessage(content=user_message)
+    ]
+    
+    response = llm.invoke(prompt)
+    
+    title = response.content.strip().replace("\n", "")
+    
+    return title[:60]
 
 conn = sqlite3.connect("react.db", check_same_thread=False)
 checkpointer = SqliteSaver(conn)
+conn.execute("""
+CREATE TABLE IF NOT EXISTS conversations (
+    thread_id TEXT PRIMARY KEY,
+    title TEXT
+)
+""")
+conn.commit()
+
+def save_conversation_title(thread_id: str, title: str):
+    conn.execute(
+        "INSERT OR REPLACE INTO conversations (thread_id, title) VALUES (?, ?)",
+        (thread_id, title)
+    )
+    conn.commit()
+    
+def load_all_titles():
+    cursor = conn.execute("SELECT thread_id, title FROM conversations")
+    return dict(cursor.fetchall())
+
+def delete_conversation(thread_id: str):
+    # Delete title
+    conn.execute(
+        "DELETE FROM conversations WHERE thread_id = ?",
+        (thread_id,)
+    )
+
+    # Delete LangGraph checkpoint state
+    conn.execute(
+        "DELETE FROM checkpoints WHERE thread_id = ?",
+        (thread_id,)
+    )
+
+    conn.execute(
+        "DELETE FROM writes WHERE thread_id = ?",
+        (thread_id,)
+    )
+
+    conn.commit()
 
 graph = StateGraph(ChatState)
 
@@ -225,8 +283,6 @@ graph.add_conditional_edges(
 graph.add_edge("tool_node", "reasoning")
 
 chatbot = graph.compile(checkpointer=checkpointer)
-
-
 # CLI LOOP
 
 
