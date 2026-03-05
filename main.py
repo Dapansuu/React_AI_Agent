@@ -193,31 +193,47 @@ def web_search(query: str) -> str:
 def news(topic: str) -> str:
     """
     REQUIRED for all news-related queries.
-
-    MUST be used when:
-    - user asks for latest news
-    - breaking news
-    - recent events
-    - headlines
-    - updates about a topic
-    - "what happened today"
-    - "latest on [topic]"
-
-    Never answer news questions from memory.
-    Always retrieve current news using this tool.
+    Always retrieves recent news (last 24 hours).
     """
-    try: 
-        url = f"https://news.google.com/rss/search?q={topic}"
+
+    try:
+        import urllib.parse
+        from datetime import datetime
+        import feedparser
+
+        # Force last 24 hours
+        query = f"{topic} when:1d"
+        encoded_query = urllib.parse.quote(query)
+
+        url = (
+            f"https://news.google.com/rss/search?q={encoded_query}"
+            f"&hl=en-IN&gl=IN&ceid=IN:en"
+        )
+
         feed = feedparser.parse(url)
-        
-        headlines = []
+
+        if not feed.entries:
+            return f"No news found in the last 24 hours for '{topic}'."
+
+        articles = []
+
         for entry in feed.entries[:5]:
-            headlines.append(
-                f"Title: {entry.title}\nLink: {entry.link}"
+            published = ""
+            if hasattr(entry, "published_parsed") and entry.published_parsed:
+                published = datetime(*entry.published_parsed[:6]).strftime("%Y-%m-%d %H:%M")
+
+            articles.append(
+                f"""
+            Title: {entry.title}
+            Published: {published}
+            Source: {entry.link}
+            """.strip()
             )
-        return "\n\n".join(headlines)
+
+        return "\n\n---\n\n".join(articles)
+
     except Exception as e:
-        return "Error: " + str(e)
+        return f"News retrieval error: {str(e)}"
 
 @tool
 def get_stock_price(symbol: str) -> str:
@@ -381,15 +397,13 @@ def get_llm():
         model="openai/gpt-4o-mini",
         openai_api_key=OPENROUTER_API_KEY(),
         openai_api_base="https://openrouter.ai/api/v1",
-        temperature=0.1,   # lower = less hallucination / confabulation
+        temperature=0.1,  
     )
 
 def agent_node(state: AgentState):
     messages = [SystemMessage(content=SYSTEM_PROMPT)] + list(state["messages"])
     # Count how many tool results are already in this state
     tool_result_count = sum(1 for m in state["messages"] if isinstance(m, ToolMessage))
-    # On the very first LLM call (no tool results yet) force a tool call so the
-    # model cannot answer purely from its stale training data.
     if tool_result_count == 0:
         llm = get_llm().bind_tools(TOOLS, tool_choice="required")
     else:
