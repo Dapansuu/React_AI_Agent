@@ -1,15 +1,11 @@
-sqlite3
-os
 requests
 feedparser
 yfinance
 python-dotenv
-typing
 langgraph
-langchain_openai
-langchain_core
+langchain-openai
+langchain-core
 langchain
 ddgs
 sympy
 streamlit
-uuid
