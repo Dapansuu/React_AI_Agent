@@ -1,3 +1,5 @@
 .env
 test.py
 react.db
+chat_agent.db
+chat_memory.db
