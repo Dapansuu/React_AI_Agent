@@ -24,6 +24,7 @@ from langgraph.graph.message import add_messages
 from ddgs import DDGS
 from sympy import sympify, pi, E
 from sympy.core.sympify import SympifyError
+from langchain_core.runnables import RunnableLambda
 
 #* ENV 
 load_dotenv()
@@ -168,7 +169,7 @@ tool_node = ToolNode(tools)
 
 llm_with_tools = llm.bind_tools(tools)
 
-from langchain_core.runnables import RunnableLambda
+
 
 system_prompt = SystemMessage(
     content=(
@@ -189,23 +190,13 @@ llm_with_tools = RunnableLambda(add_system) | llm_with_tools
 
 class ChatState(TypedDict):
     messages: Annotated[list[BaseMessage], add_messages]
-    steps: int
 
 def reasoning_node(state: ChatState):
-    steps = state.get("steps", 0)
-
-    if steps > 8:
-        from langchain_core.messages import AIMessage
-        return {
-            "messages": [AIMessage(content="Max reasoning steps reached.")],
-            "steps": steps
-        }
 
     response = llm_with_tools.invoke(state["messages"])
 
     return {
         "messages": [response],
-        "steps": steps + 1
     }
 def router(state: ChatState):
     last_message = state["messages"][-1]
