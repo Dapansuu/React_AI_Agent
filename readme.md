@@ -6,11 +6,11 @@ A conversational AI assistant built with **LangGraph**, **LangChain**, and **Str
 
 ## ✨ Features
 
-- 🔍 **Web Search** — Live internet lookups via DuckDuckGo (no API key needed)
+- 🔍 **Web Search** — Live internet lookups via DuckDuckGo
 - 📰 **News** — Latest headlines from Google News RSS (last 24 hours)
-- 📈 **Stock Prices** — Real-time stock data via Yahoo Finance (no API key needed)
-- 💱 **Currency Exchange** — Live FX rates via Frankfurter API (no API key needed)
-- 🌤 **Weather** — Current conditions via Open-Meteo (no API key needed)
+- 📈 **Stock Prices** — Real-time stock data via Yahoo Finance
+- 💱 **Currency Exchange** — Live FX rates via Frankfurter API 
+- 🌤 **Weather** — Current conditions via Open-Meteo 
 - 🔐 **User Auth** — Secure login/signup with hashed passwords (SQLite)
 - 💬 **Chat History** — Persistent conversations stored per user
 - ✅ **Response Validation** — Auto-detects and fixes empty/malformed AI responses
@@ -27,7 +27,7 @@ A conversational AI assistant built with **LangGraph**, **LangChain**, and **Str
 | Database | SQLite (via `sqlite3`) |
 | Web Search | [DuckDuckGo Search (ddgs)](https://pypi.org/project/duckduckgo-search/) |
 | News | Google News RSS via `feedparser` |
-| Stock Data | Yahoo Finance (free, no key) |
+| Stock Data | Yahoo Finance (free) |
 | FX Rates | [Frankfurter API](https://www.frankfurter.app/) (free) |
 | Weather | [Open-Meteo](https://open-meteo.com/) (free) |
 
