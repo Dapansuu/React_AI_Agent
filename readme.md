@@ -28,8 +28,8 @@ A conversational AI assistant built with **LangGraph**, **LangChain**, and **Str
 | Web Search | [DuckDuckGo Search (ddgs)](https://pypi.org/project/duckduckgo-search/) |
 | News | Google News RSS via `feedparser` |
 | Stock Data | Yahoo Finance (free, no key) |
-| FX Rates | [Frankfurter API](https://www.frankfurter.app/) (free, no key) |
-| Weather | [Open-Meteo](https://open-meteo.com/) (free, no key) |
+| FX Rates | [Frankfurter API](https://www.frankfurter.app/) (free) |
+| Weather | [Open-Meteo](https://open-meteo.com/) (free) |
 
 <img width="233" height="432" alt="graph" src="https://github.com/user-attachments/assets/0d4a1f29-844d-4963-8fd0-9471a5813e30" />
 
